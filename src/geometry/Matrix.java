@@ -66,16 +66,25 @@ public class Matrix {
         }
         return I;
     }
+    public static double[][] givensRotation(int n, int i, int j, double theta){
+        double[][] G=new double[n][n];
+        for(int k=0; k<n; k++){
+            if(k!=i && k!=j){
+                G[k][k]=1;
+            }
+        }
+        double cos=Math.cos(theta);
+        double sin=Math.signum(i-j)*Math.sin(theta);
+        G[i][i]=cos;
+        G[j][j]=cos;
+        G[i][j]=sin;
+        G[j][i]=-sin;
+        return G;
+    }
     public static double[][] eulerRotation(double alpha, double beta, double gamma){
-        double cos=Math.cos(-alpha);
-        double sin=Math.sin(-alpha);
-        double[][] Rx={{1,0,0,0},{0,cos,-sin,0},{0,sin,cos,0},{0,0,0,1}};
-        cos=Math.cos(-beta);
-        sin=Math.sin(-beta);
-        double[][] Ry={{cos,0,sin,0},{0,1,0,0},{-sin,0,cos,0},{0,0,0,1}};
-        cos=Math.cos(-gamma);
-        sin=Math.sin(-gamma);
-        double[][] Rz={{cos,-sin,0,0},{sin,cos,0,0},{0,0,1,0},{0,0,0,1}};
+        double[][] Rx=givensRotation(4, 2, 1, -alpha);
+        double[][] Ry=givensRotation(4, 2, 0, beta);
+        double[][] Rz=givensRotation(4, 1, 0, -gamma);
         return multiply(multiply(Rx, Ry), Rz);
     }
     public static double[][] axisRotation(Vector axis, double angle){
@@ -92,10 +101,19 @@ public class Matrix {
         return R;
     }
     public static void GaussJordan(double[][] M){
-        int p;
+        int p, r;
         double t;
         for(int i=0; i<M.length; i++){
-            t=M[i][i];
+            r=i;
+            do{
+                t=M[r++][i];
+            }while(t==0 && r<M.length);
+            r--;
+            if(i!=r){
+                double[] temp=M[i];
+                M[i]=M[r];
+                M[r]=temp;
+            }
             for(int j=i; j<M[i].length; j++){
                 M[i][j]/=t;
             }
@@ -107,5 +125,69 @@ public class Matrix {
                 }
             }
         }
+    }
+    
+    public static double[][] merge(double[][][][] T){
+        int rows=0, cols=0;
+        for(double[][][] R:T){
+            rows+=R[0].length;
+        }
+        for(double[][] C:T[0]){
+            cols+=C[0].length;
+        }
+        double[][] H=new double[rows][cols];
+        rows=0;
+        for(double[][][] R:T) {
+            cols=0;
+            for(double[][] M:R) {
+                for(int k=0; k<M.length; k++) {
+                    System.arraycopy(M[k], 0, H[rows+k], cols, M[k].length);
+                }
+                cols+=M[0].length;
+            }
+            rows+=R[0].length;
+        }
+        return H;
+    }
+    public static double[][] mergeH(double[][][] T){
+        int cols=0;
+        for (double[][] M:T) {
+            cols+=M[0].length;
+        }
+        double[][] H=new double[T[0].length][cols];
+        cols=0;
+        for(double[][] M:T) {
+            for(int k=0; k<M.length; k++){
+                System.arraycopy(M[k], 0, H[k], cols, M[k].length);
+            }
+            cols+=M[0].length;
+        }
+        return H;
+    }
+    public static double[][] mergeV(double[][][] T){
+        int rows=0;
+        for(double[][] M:T){
+            rows+=M.length;
+        }
+        double[][] V=new double[rows][T[0][0].length];
+        rows=0;
+        for(double[][] M:T){
+            System.arraycopy(M, 0, V, rows, M.length);
+            rows+=M.length;
+        }
+        return V;
+    }
+    
+    public static void main(String[] args){
+        double[][] A={{0,-18,-3},{0,3,4},{1,5,5}};
+        double[][] I={{1,0,0},{0,1,0},{0,0,1}};
+        double[][] M=mergeH(new double[][][]{A, I});
+        printMatrix(M);
+        System.out.println();
+        GaussJordan(M);
+        
+        printMatrix(M);
+        System.out.println();
+        printMatrix(multiply(A, M));
     }
 }

@@ -353,15 +353,16 @@ public class Viewer extends JPanel implements Runnable{
         }
     }
     @Override
-    public synchronized void run(){
+    public synchronized void run(){        
         while(true){
             try{
+                double r, P[][];
                 for(int i=0; i<shapes.length; i++){
                     int m=model[i].length;
                     double[][] rotation=Matrix.multiply(R, shapes[i].getRotationMatrix());
                     for(int j=0; j<m; j++){
-                        double[][] P=Matrix.multiply(rotation, model[i][j].toColumn(4));
-                        double r=1/zoom-P[2][0]/300;
+                        P=Matrix.multiply(rotation, model[i][j].toColumn(4));
+                        r=1/zoom-P[2][0]/300;
                         transform[i][j].set(P[0][0]/r, P[1][0]/r, P[2][0]);
                     }
                 }
@@ -384,6 +385,6 @@ public class Viewer extends JPanel implements Runnable{
         }catch(ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ex){
             Logger.getLogger(Viewer.class.getName()).log(Level.SEVERE, null, ex);
         }
-        Viewer v=new Viewer(ShapeFactory.jello(100,6));
+        Viewer v=new Viewer(ShapeFactory.kochSnowflake(4, 100));
     }
 }

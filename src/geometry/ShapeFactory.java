@@ -2,7 +2,6 @@ package geometry;
 
 import static geometry.Vector.*;
 import static geometry.Matrix.*;
-import java.awt.Color;
 import static util.ArrayOp.*;
 import java.util.Arrays;
 import mathematics.*;
